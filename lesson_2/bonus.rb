@@ -80,6 +80,53 @@ class Computer < Player
   end
 end
 
+class R2D2 < Computer
+  def choose
+    'rock'
+  end
+end
+
+class Hal < Computer
+  def choose
+    ['scissors', 'scissors', 'scissors', 'scissors', 'rock'].sample
+  end
+end
+
+class Chappie < Computer
+  def choose
+    if history.empty?
+      Move::VALUES.sample
+    else
+      case history[-1]
+      when 'rock' then 'paper'
+      when 'paper' then 'scissors'
+      when 'scissors' then 'rock'
+      end
+    end
+  end
+end
+
+class Sonny < Computer
+  def choose
+    if history.empty?
+      Move::VALUES.sample
+    else
+      case history[-1]
+      when 'rock' then 'scissors'
+      when 'paper' then 'rock'
+      when 'scissors' then 'paper'
+      end
+    end
+  end
+end
+
+class Number5 < Computer
+  def choose
+    Move::VALUES.sample
+  end
+end
+
+
 class RPSGame
   attr_accessor :human, :computer
 
