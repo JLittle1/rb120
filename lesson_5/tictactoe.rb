@@ -226,6 +226,7 @@ class TTTGame
     else
       puts "It's a tie!"
     end
+    puts "Score: Human #{human.score} - Computer #{computer.score}"
   end
 
   def play_again?
