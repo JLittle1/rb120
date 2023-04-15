@@ -1,3 +1,5 @@
+require 'pry'
+
 class Board
   WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                   [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
@@ -29,6 +31,15 @@ class Board
       squares = @squares.values_at(*line)
       if three_identical_markers?(squares)
         return squares.first.marker
+      end
+    end
+    nil
+  end
+
+  def find_winning_move(marker)
+    WINNING_LINES.each do |line|
+      if @squares.values_at(*line).map(&:marker).count(marker) == 2
+        return unmarked_keys.intersection(line).first
       end
     end
     nil
@@ -87,9 +98,11 @@ end
 
 class Player
   attr_reader :marker
+  attr_accessor :score
 
   def initialize(marker)
     @marker = marker
+    @score = 0
   end
 end
 
@@ -161,7 +174,7 @@ class TTTGame
   end
 
   def human_moves
-    puts "Choose a square (#{board.unmarked_keys.join(', ')}): "
+    puts "Choose a square (#{joinor(board.unmarked_keys)}): "
     square = nil
     loop do
       square = gets.chomp.to_i
@@ -172,8 +185,22 @@ class TTTGame
     board[square] = human.marker
   end
 
+  def joinor(arr, seperator=', ', word='or')
+    return arr[0].to_s if arr.size == 1
+    return "#{arr[0]} #{word} #{arr[1]}" if arr.size == 2
+    arr[0...-1].join(seperator) + seperator + word + ' ' + arr[-1].to_s
+  end
+
+  # def computer_moves
+  #   board[board.unmarked_keys.sample] = computer.marker
+  # end
+
   def computer_moves
-    board[board.unmarked_keys.sample] = computer.marker
+    square = board.find_winning_move(COMPUTER_MARKER)
+    square ||= board.find_winning_move(HUMAN_MARKER)
+    square ||= 5 if board.unmarked_keys.include?(5)
+    square ||= board.unmarked_keys.sample
+    board[square] = COMPUTER_MARKER
   end
 
   def current_player_moves
@@ -191,8 +218,10 @@ class TTTGame
 
     case board.winning_marker
     when human.marker
+      human.score += 1
       puts "You won!"
     when computer.marker
+      computer.score += 1
       puts "Computer won!"
     else
       puts "It's a tie!"
