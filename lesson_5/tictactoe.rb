@@ -111,37 +111,50 @@ class TTTGame
 
   def initialize
     @board = Board.new
-    @human_marker = select_human_marker
-    @computer_marker = @human_marker == 'O' ? 'X' : 'O'
-    @first_to_move = determine_first_to_move
-    @human = Player.new(@human_marker)
-    @computer = Player.new(@computer_marker)
-    @current_marker = @first_to_move
   end
 
   def play
     clear
     display_welcome_message
-    main_game
+    loop do
+      set_up_game
+      main_game
+      break unless play_again?
+    end
     display_goodbye_message
   end
 
   private
 
-  def select_human_marker
+  def set_up_game
+    reset
+    set_human_marker
+    set_computer_marker
+    determine_first_to_move
+    @human = Player.new(@human_marker)
+    @computer = Player.new(@computer_marker)
+    @current_marker = @first_to_move
+  end
+
+  def set_human_marker
     puts "What would you like your marker to be?"
-    gets.chomp
+    @human_marker = gets.chomp
+  end
+
+  def set_computer_marker
+    @computer_marker = @human_marker == 'O' ? 'X' : 'O'
   end
 
   def determine_first_to_move
     puts 'Who should play first? p for player, c for computer, r for random'
     loop do
       response = gets.chomp.downcase[0]
-      case response
-      when 'p' then return @human_marker
-      when 'c' then return @computer_marker
-      when 'r' then return [@human_marker, @computer_marker].sample
+      @first_to_move = case response
+      when 'p' then @human_marker
+      when 'c' then @computer_marker
+      when 'r' then [@human_marker, @computer_marker].sample
       end
+      break if @first_to_move
       puts 'Invalid input. Please enter p, c, or r'
     end
   end
@@ -151,9 +164,13 @@ class TTTGame
       display_board
       player_move
       display_result
-      break unless play_again?
+      if human.score == 5 || computer.score == 5
+        display_victor
+        break
+      end
+      puts "Press enter to continue:"
+      gets.chomp
       reset
-      display_play_again_message
     end
   end
 
@@ -168,6 +185,14 @@ class TTTGame
   def display_welcome_message
     puts "Welcome to Tic Tac Toe!"
     puts ""
+  end
+
+  def display_victor
+    if human.score == 5
+      puts "With five victories, you win the round!"
+    elsif computer.score == 5
+      puts "With five victories, computer wins the round!"
+    end
   end
 
   def display_goodbye_message
@@ -207,10 +232,6 @@ class TTTGame
     return "#{arr[0]} #{word} #{arr[1]}" if arr.size == 2
     arr[0...-1].join(seperator) + seperator + word + ' ' + arr[-1].to_s
   end
-
-  # def computer_moves
-  #   board[board.unmarked_keys.sample] = computer.marker
-  # end
 
   def computer_moves
     square = board.find_winning_move(@computer_marker)
