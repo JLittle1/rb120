@@ -97,11 +97,12 @@ class Square
 end
 
 class Player
-  attr_reader :marker
-  attr_accessor :score
+  DEFAULT_NAMES = ['Conan', 'Akiro', 'Subotai', 'Thorgrim', 'Thulsa Doom']
 
-  def initialize(marker)
-    @marker = marker
+  attr_accessor :name, :marker, :score
+
+  def initialize
+    @name = DEFAULT_NAMES.sample
     @score = 0
   end
 end
@@ -128,21 +129,29 @@ class TTTGame
 
   def set_up_game
     reset
+    @human = Player.new
+    @computer = Player.new
+    ask_for_name
     set_human_marker
     set_computer_marker
     determine_first_to_move
-    @human = Player.new(@human_marker)
-    @computer = Player.new(@computer_marker)
     @current_marker = @first_to_move
+  end
+
+  def ask_for_name
+    puts "What is your name?"
+    @human.name = gets.chomp
   end
 
   def set_human_marker
     puts "What would you like your marker to be?"
     @human_marker = gets.chomp
+    human.marker = @human_marker
   end
 
   def set_computer_marker
     @computer_marker = @human_marker == 'O' ? 'X' : 'O'
+    computer.marker = @computer_marker
   end
 
   def determine_first_to_move
@@ -189,7 +198,7 @@ class TTTGame
 
   def display_victor
     if human.score == 5
-      puts "With five victories, you win the round!"
+      puts "With five victories, #{human.name} wins the round!"
     elsif computer.score == 5
       puts "With five victories, computer wins the round!"
     end
@@ -209,7 +218,7 @@ class TTTGame
   end
 
   def display_board
-    puts "You're a #{human.marker}. Computer is a #{computer.marker}."
+    puts "#{human.name} is a #{human.marker}. #{computer.name} is a #{computer.marker}."
     puts ""
     board.draw
     puts ""
@@ -264,7 +273,7 @@ class TTTGame
     else
       puts "It's a tie!"
     end
-    puts "Score: Human #{human.score} - Computer #{computer.score}"
+    puts "Score: #{human.name} #{human.score} - #{computer.name} #{computer.score}"
   end
 
   def play_again?
